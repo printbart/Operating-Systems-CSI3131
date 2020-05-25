@@ -68,7 +68,8 @@ int main(int argc, char **argv)
     execlp ("./task", "task", "pid3", str, NULL);
   }
 
-  //deleted wait
+  //wait for one child process
+  pid = wait(&status); printf ("pid %d ended\n" ,pid);
 
   sprintf(str, "./task pid_parent %d", time_period[3]);
   system(str);
