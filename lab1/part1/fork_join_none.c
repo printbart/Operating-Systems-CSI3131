@@ -67,10 +67,6 @@ int main(int argc, char **argv)
     sprintf(str, "%d", time_period[2]);
     execlp ("./task", "task", "pid3", str, NULL);
   }
-  // main process
-  pid = wait(&status); printf ("pid %d ended\n" ,pid);
-  pid = wait(&status); printf ("pid %d ended\n" ,pid);
-  pid = wait(&status); printf ("pid %d ended\n" ,pid);
 
   sprintf(str, "./task pid_parent %d", time_period[3]);
   system(str);
