@@ -13,6 +13,7 @@ Description:  This program creates the station processes
 #include <stdlib.h> 
 #include <sys/wait.h>
 #include <sys/stat.h>
+#include <pthread.h>
 
 char ID;
 char *cfg_fname;
