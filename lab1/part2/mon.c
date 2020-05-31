@@ -18,7 +18,7 @@ int main(int argc, char **argv)
         exit(-1);
     }
     else if(pid1 == 0){
-        excelp("./calcloop", "calcloop", NULL);
+        execlp("./calcloop", "calcloop", NULL);
     }
 
     pid2 = fork();
