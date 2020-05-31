@@ -17,8 +17,8 @@ int main(int argc, char **argv)
         fprintf(stderr, "Fork Failed");
         exit(-1);
     }
-    else if(pid1 == 1){
-        excelp("./calcloop");
+    else if(pid1 == 0){
+        excelp("./calcloop", "calcloop", NULL);
     }
 
     pid2 = fork();
@@ -26,20 +26,23 @@ int main(int argc, char **argv)
         fprintf(stderr, "Fork Failed");
         exit(-1);
     }
-    else if(pid2 == 1){
-        excelp("./procmon", pid1);
+    else if(pid2 == 0){
+        char pid1_str[128];
+        sprintf(pid1_str, "%d", pid1);
+        execlp("./procmon", "procmon", pid1_str, NULL);
     }
 
-    pid1 = wait(&status); printf ("pid %d ended\n" ,pid1);
-    pid2 = wait(&status); printf ("pid %d ended\n" ,pid2);
+    int result = wait(&status);
+
+   result = wait(&status);
 
     pid3 = fork();
     if (pid3 < 0) {
         fprintf(stderr, "Fork Failed");
         exit(-1);
     }
-    else if(pid3 == 1){
-        excelp("./cploop");
+    else if(pid3 == 0){
+        execlp("./cploop", "cploop", (char *) NULL);
     }
 
     pid2 = fork();
@@ -47,12 +50,16 @@ int main(int argc, char **argv)
         fprintf(stderr, "Fork Failed");
         exit(-1);
     }
-    else if(pid2 == 1){
-        excelp("./procmon", pid3);
+    else if(pid2 == 0){
+        char pid3_str[128];
+       sprintf(pid3_str, "%d", pid3);
+       execlp("./procmon", "procmon", pid3_str, NULL);
     }
 
-    pid3 = wait(&status); printf ("pid %d ended\n" ,pid3);
-    pid2 = wait(&status); printf ("pid %d ended\n" ,pid2);
+    result = wait(&status);
+    result = wait(&status);
+
+    return(0);
 
 
     /* Here comes your code.*/
