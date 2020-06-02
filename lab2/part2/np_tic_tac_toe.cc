@@ -26,6 +26,7 @@
  
  
 int main(int argc, char **argv) {
+  tic_tac_toe *game = new tic_tac_toe();
   char player;
 
   if (argc != 2) {
@@ -34,8 +35,36 @@ int main(int argc, char **argv) {
   }
   player = argv[1][0];
   if (player != 'X' && player != 'O') {
-    printf ("Usage: player names must be either X or Y");
+    printf ("Usage: player names must be either X or O");
     return (-2);
   }
-  return (0);
+
+  int fd;
+  char str[256] = "";
+  char myfifo[128] = "part2/my_pipe";
+
+  int turn = 0;
+
+  do{
+    if( (player == 'X' && turn%2 == 0) || (player == 'O' && turn%2 == 1) ){
+      game->display_game_board();
+      game->get_player_move(player);
+      game->display_game_board();
+      fd = open(myfifo, O_WRONLY);
+      write(fd, game->convert2string(), strlen(game->convert2string())+1);
+      close(fd);
+    }
+    else{
+      fd = open(myfifo, O_RDONLY);
+      read(fd, str, 256);
+      close(fd);
+      game->set_game_state(str);
+    }
+    printf("%s\n", "Incrementing Turn");
+    turn++;
+    
+  }while ((game->game_result()) == '-');
+  game->display_game_board();
+  printf ("Game finished, result: %c \n", (game->game_result()));
+  return 0;
 }

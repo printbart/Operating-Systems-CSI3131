@@ -81,21 +81,40 @@ int main(int argc, char **argv) {
   my_pid = getpid();
   printf("My pid is: %d\n", my_pid);
   
-  outFile = fopen (my_filename, "w");
-  fprintf (outFile, "%d", my_pid);
-  fclose(outFile);
-  
-  printf ("trying to open input file:\n .");
-  do {
-    sleep(1);
-    inFile = fopen (oponent_filename, "r");
-    printf (".");
-  } while (inFile == NULL);
-  
-  fgets( buffer1, 128, inFile );
-  oponent_pid = atoi (buffer1);
-  printf (" done. \noponent_pid %d \n", oponent_pid);
-  fclose(inFile);
+  //my code
+  tic_tac_toe *game = new tic_tac_toe();
+  game->display_game_board();
+  int turn = 0;
+  char prevGame[255] = "";
+  int result;
+
+  do{
+    if( (player == 'X' && turn%2 == 0) || (player == 'O' && turn%2 == 1) ){
+      outFile = fopen (my_filename, "w");
+      game->display_game_board();
+      game->get_player_move(player);
+      fprintf (outFile, "%s", game->convert2string());
+      fclose(outFile);
+      turn++;
+    }
+    else{
+        sleep(1);
+        inFile = fopen (oponent_filename, "r");
+        fgets( buffer1, 128, inFile );
+        result = strcmp(prevGame, buffer1);
+        if(result != 0){
+          strcpy(prevGame, buffer1);
+          game->set_game_state(buffer1);
+          game->display_game_board();
+          fclose(inFile);
+          turn++;
+        }
+    }
+  } while  ((game->game_result()) == '-');
+  printf("game result %c\n", game->game_result());
+
+  //end of my code
+
 
   // Setup the sighub handler
   sa.sa_handler = &handle_signal;
