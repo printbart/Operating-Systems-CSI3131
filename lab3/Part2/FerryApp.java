@@ -44,6 +44,7 @@ public class FerryApp
     Ambulance [] ambulance = new Ambulance[NUM_AMBS];
     for (i=0; i< NUM_AMBS; i++) ambulance[i] = new Ambulance(i, (PORT0+i) % 2,ferry, logger);
 
+    System.out.println("--");
     /* Start the threads */
     ferry.start();   // Start the ferry thread.
     for (i=0; i<NUM_CARS; i++) automobile[i].start();  // Start automobile threads

@@ -1,3 +1,5 @@
+import java.util.concurrent.Semaphore;
+
 class Ferry extends Thread{ // The ferry Class
   final static int MAXLOAD = 5;
   private int port=0;  // Start at port 0
@@ -5,7 +7,19 @@ class Ferry extends Thread{ // The ferry Class
   private int numCrossings;  // number of crossings to execute
   private boolean ambulance_loaded = false;
   Logger logger;
+
   // Semaphores
+
+  Semaphore finLoadSem = new Semaphore(0);
+  Semaphore finUnloadSem = new Semaphore(1);
+  Semaphore[] loadingSem = new Semaphore[]{
+    new Semaphore(1),
+    new Semaphore(1)
+  };
+  Semaphore[] unloadSem = new Semaphore[]{
+    new Semaphore(1),
+    new Semaphore(1)
+  };
 
   public Ferry(int prt, int nbtours, Logger logger)
   {
@@ -15,10 +29,43 @@ class Ferry extends Thread{ // The ferry Class
   }
 
   public void run() {
-    System.out.println("Start at port " + port + " with a load of " + load + " vehicles");
+    try{
+      sleep(2000);
+    }
+    catch(Exception e){
+      System.out.println(e);
+    }
 
     // numCrossings crossings in our day
     for(int i=0 ; i < numCrossings ; i++) {
+      while(load != 0){
+        try{
+          sleep(100);
+        }
+        catch(Exception e){
+          break;
+        }
+      }
+      finLoadSem.release(MAXLOAD);
+
+      try{
+        finUnloadSem.acquire();
+      }
+      catch (InterruptedException ie) {
+        Thread.currentThread().interrupt();
+        System.out.println("Thread terminated by interruption"); // handle the interrupt
+        return;
+      }
+
+      while(finLoadSem.availablePermits()!=0){
+        try{
+          sleep(100);
+        }
+        catch(Exception e){
+          break;
+        }
+      }
+
       // The crossing
       System.out.println("Departure from port " + port + " with a load of " + load + " vehicles");
       System.out.println("Crossing " + i + " with a load of " + load + " vehicles");
@@ -33,6 +80,16 @@ class Ferry extends Thread{ // The ferry Class
       // Arrive at port
       System.out.println("Arrive at port " + port + " with a load of " + load + " vehicles");
       // Disembarkment et loading
+
+      try{
+        finUnloadSem.acquire();
+      }catch(InterruptedException ie){
+        Thread.currentThread().interrupt();
+        System.out.println("Thread terminated by interruption"); // handle the interrupt
+        return;
+      }
+
+      finUnloadSem.release();
     }
   }
 
@@ -40,18 +97,31 @@ class Ferry extends Thread{ // The ferry Class
   public int getLoad() { return(load); }
   public int getPort() { return(port); }
   public void addLoad() {
-    logger.check(load < MAXLOAD, "error loadig in a full Ferry!");
-    load = load + 1; 
-    System.out.println ("added load, now " + load);
+    try{
+      finLoadSem.acquire();
+      logger.check(load < MAXLOAD, "error loadig in a full Ferry!");
+      load = load + 1; 
+      System.out.println ("added load, now " + load);
+    }
+    catch(InterruptedException e){
+      Thread.currentThread().interrupt();
+      return;
+    }
   }
   public void reduceLoad()  { 
     logger.check(load > 0, "error unloading an empty Ferry!");
     load = load - 1 ; 
     System.out.println ("removed load, now " + load);
+
+    if(load == 0){
+      finUnloadSem.release();
+    }
   }
   public void loadAmbulance() {
     ambulance_loaded = true;
     addLoad();
+
+    finLoadSem.drainPermits();
   }
   public void unloadAmbulance(){
     ambulance_loaded = false;
